@@ -6,12 +6,18 @@
 #include <sys/socket.h>  // socket connect
 #include <string.h>  // bzero
 
+void controlMsgCallback(const std_msgs::String::ConstPtr& msg)
+{
+    printf("enter callback\n");
+}
+
 int main(int argc, char **argv)
 {
     // init ros parameter
     ros::init(argc, argv, "chassis_communication_node");
     ros::NodeHandle nh;
     ros::Publisher pub = nh.advertise<std_msgs::String>("/chassis_signal", 1000);
+    ros::Subscriber sub = nh.subscribe("/control_cmd", 1000, controlMsgCallback);
     ros::Rate try_connect_rate_hz(1);  // try connect every 1 second
     ros::Rate receive_data_rate_hz(10);
 
@@ -59,6 +65,7 @@ int main(int argc, char **argv)
                 }
                 else
                 {
+                    printf("SUCCESSFUL, connected!\n");
                     is_connected = true;
                 }
             }
@@ -82,8 +89,8 @@ int main(int argc, char **argv)
         }
 
         printf("loop once\n");
-        // ros::spinOnce();
-        // receive_data_rate_hz.sleep();
+        ros::spinOnce();
+        receive_data_rate_hz.sleep();
     }
 
 
