@@ -23,53 +23,11 @@ int main(int argc, char **argv)
 
     // socket parameter
     bool is_connected = false;
-    struct sockaddr_in serv_addr;
-    struct hostent *server;
-    int sockfd = -1;
-    int n = -1;
-    int portno =  5000;
-    const char* host_ip_addr = std::string("192.168.0.106").c_str();
-    char buffer[256];
+
 
     while (ros::ok() && !is_connected)
     {
-        // open socket
-        sockfd = socket(AF_INET, SOCK_STREAM, 0);
-        if (sockfd < 0)
-        {
-            // ERROR, opening socket
-            printf("ERROR, opening socket\n");
-        }
-        else
-        {
-            server = gethostbyname(host_ip_addr);
-            if (server == NULL)
-            {
-                // ERROR, no such host ip
-                printf("ERROR, no such host name: %s\n", host_ip_addr);
-            }
-            else
-            {
-                bzero((char *)&serv_addr, sizeof(serv_addr));
-                serv_addr.sin_family = AF_INET;
-                bcopy((char *)server->h_addr,
-                        (char *)&serv_addr.sin_addr.s_addr,
-                        server->h_length);
-                serv_addr.sin_port = htons(portno);
-
-                if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
-                {
-                    // ERROR connecting
-                    printf("ERROR, can not connect, try connect again after 1s\n");
-                    try_connect_rate_hz.sleep();
-                }
-                else
-                {
-                    printf("SUCCESSFUL, connected!\n");
-                    is_connected = true;
-                }
-            }
-        }
+        try_connect_rate_hz.sleep();
     }
 
     while (ros::ok())  //TODO: how to exit, read() blocked, cannot exectue while (ros::ok()) until receive msg
@@ -94,6 +52,6 @@ int main(int argc, char **argv)
     }
 
 
-    close(sockfd);
+
     return 0;
 }
