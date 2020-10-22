@@ -1,0 +1,7 @@
+# catkin_tools configuration
+/.catkin_tools/
+
+# build folder
+/build/
+/devel/
+/logs/
