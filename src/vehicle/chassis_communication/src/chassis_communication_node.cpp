@@ -25,70 +25,68 @@ int main(int argc, char **argv)
     const char* host_ip_addr = std::string("192.168.0.106").c_str();
     char buffer[256];
 
-    while (ros::ok())
+    while (ros::ok() && !is_connected)
     {
-        while (!is_connected)
+        // open socket
+        sockfd = socket(AF_INET, SOCK_STREAM, 0);
+        if (sockfd < 0)
         {
-            // open socket
-            sockfd = socket(AF_INET, SOCK_STREAM, 0);
-            if (sockfd < 0)
+            // ERROR, opening socket
+            printf("ERROR, opening socket\n");
+        }
+        else
+        {
+            server = gethostbyname(host_ip_addr);
+            if (server == NULL)
             {
-                // ERROR, opening socket
-                printf("ERROR, opening socket\n");
+                // ERROR, no such host ip
+                printf("ERROR, no such host name: %s\n", host_ip_addr);
             }
             else
             {
-                server = gethostbyname(host_ip_addr);
-                if (server == NULL)
+                bzero((char *)&serv_addr, sizeof(serv_addr));
+                serv_addr.sin_family = AF_INET;
+                bcopy((char *)server->h_addr,
+                        (char *)&serv_addr.sin_addr.s_addr,
+                        server->h_length);
+                serv_addr.sin_port = htons(portno);
+
+                if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
                 {
-                    // ERROR, no such host ip
-                    printf("ERROR, no such host ip: %s\n", host_ip_addr);
+                    // ERROR connecting
+                    printf("ERROR, can not connect, try connect again after 1s\n");
+                    try_connect_rate_hz.sleep();
                 }
                 else
                 {
-                    bzero((char *)&serv_addr, sizeof(serv_addr));
-                    serv_addr.sin_family = AF_INET;
-                    bcopy((char *)server->h_addr,
-                          (char *)&serv_addr.sin_addr.s_addr,
-                          server->h_length);
-                    serv_addr.sin_port = htons(portno);
-
-                    if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
-                    {
-                        // ERROR connecting
-                        printf("ERROR, can not connect, try connect again after 1s\n");
-                        try_connect_rate_hz.sleep();
-                    }
-                    else
-                    {
-                        is_connected = true;
-                    }
+                    is_connected = true;
                 }
             }
         }
-
-        if (is_connected)
-        {
-            // get msg from tcp server and send to topic
-            bzero(buffer,256);
-            n = read(sockfd,buffer,255);  // block until receive data
-            //TODO: how to exit, block, cannot exectue while (ros::ok())
-            if (n < 0)
-            {
-                printf("ERROR reading from socket");
-            }
-            else
-            {
-                std_msgs::String msg;
-                msg.data = buffer;
-                pub.publish(msg);
-            }
-
-            printf("loop once\n");
-            // ros::spinOnce();
-            // receive_data_rate_hz.sleep();
-        }
     }
+
+    while (ros::ok())  //TODO: how to exit, read() blocked, cannot exectue while (ros::ok()) until receive msg
+    {
+        // get msg from tcp server and send to topic
+        bzero(buffer,256);
+        n = read(sockfd,buffer,255);  // blocked until receive data
+        if (n < 0)
+        {
+            printf("ERROR reading from socket");
+        }
+        else
+        {
+            std_msgs::String msg;
+            msg.data = buffer;
+            pub.publish(msg);
+        }
+
+        printf("loop once\n");
+        // ros::spinOnce();
+        // receive_data_rate_hz.sleep();
+    }
+
+
     close(sockfd);
     return 0;
 }
