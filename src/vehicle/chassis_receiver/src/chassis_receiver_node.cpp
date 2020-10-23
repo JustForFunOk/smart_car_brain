@@ -20,8 +20,16 @@ int main(int argc, char **argv)
         // connect
         while (!tcp_client.isConnected())
         {
-            tcp_client.connect2TcpServer(std::string("192.168.0.106").c_str(), 5000);
-            try_connect_rate_hz.sleep();
+            auto connect_status = tcp_client.connect2TcpServer(std::string("192.168.0.106").c_str(), 5000);
+            if (::smart_car::TcpClient::kSuccess == connect_status)
+            {
+                printf("Connect successful\n");
+            }
+            else
+            {
+                printf("Connect failed, error code: %d\n", connect_status);
+                try_connect_rate_hz.sleep();
+            }
         }
 
         // get msg from tcp server and send to topic
