@@ -23,7 +23,7 @@ int main(int argc, char **argv)
     ros::Rate try_connect_rate_hz(1);  // try connect every 1 second
     ros::Rate check_callback_rate_hz(100);
 
-    while (ros::ok())  //TODO: how to exit, read() blocked, cannot exectue while (ros::ok()) until receive msg
+    while (ros::ok())
     {
         // connect
         while (!tcp_client.isConnected())
