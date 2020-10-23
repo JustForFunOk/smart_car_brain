@@ -1,0 +1,22 @@
+<launch>
+    <!--*********************************
+    **********   Launch Node   **********
+    **********************************-->
+    <!-- launch-prefix=\"xterm \-e gdb \-\-args\"
+    -->
+
+    <!-- declare arguments with default values -->
+    <arg name="tcp_server_ip"              default="192.168.0.106"/>
+    <arg name="portno"                     default="5000"/>
+
+    <include file="$(find chassis_receiver)/launch/chassis_receiver.launch" >
+        <arg name="tcp_server_ip"          value="$(arg tcp_server_ip)"/>
+        <arg name="portno"                 value="$(arg portno)"/>
+    </include>
+
+    <include file="$(find chassis_transmitter)/launch/chassis_transmitter.launch" >
+        <arg name="tcp_server_ip"          value="$(arg tcp_server_ip)"/>
+        <arg name="portno"                 value="$(arg portno)"/>
+    </include>
+
+</launch>
