@@ -16,7 +16,7 @@ namespace smart_car
 // const char* host_ip_addr = std::string("192.168.0.106").c_str();
 
 
-TcpClient::TcpClient() : sockfd_(-1)
+TcpClient::TcpClient() : sockfd_(-1), is_connected_(false)
 {
 
 }
@@ -34,6 +34,7 @@ int TcpClient::connect2TcpServer(const char* _server_ip_addr, int _portno)
     {
         // ERROR, opening socket
         // printf("ERROR, opening socket\n");
+        is_connected_ = false;
         return kSocketOpenFailed;
     }
 
@@ -43,6 +44,7 @@ int TcpClient::connect2TcpServer(const char* _server_ip_addr, int _portno)
     {
         // ERROR, no such host ip
         // printf("ERROR, no such host name: %s\n", _server_ip_addr);
+        is_connected_ = false;
         return kTcpServerIpInvalid;
     }
 
@@ -57,10 +59,12 @@ int TcpClient::connect2TcpServer(const char* _server_ip_addr, int _portno)
     {
         // ERROR connecting
         // printf("ERROR, can not connect, try connect again after 1s\n");
+        is_connected_ = false;
         return kConnectFailed;
     }
     else
     {
+        is_connected_ = true;
         return kSuccess;
     }
 }
