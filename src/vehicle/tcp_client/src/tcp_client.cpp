@@ -1,6 +1,6 @@
 #include "tcp_client/tcp_client.h"
 
-#include <stdio.h>
+#include <stdio.h>  // printf
 #include <netinet/in.h>  // sockaddr_in
 #include <netdb.h>  // hostent gethostbyname
 #include <sys/socket.h>  // socket connect
@@ -10,11 +10,9 @@
 namespace smart_car
 {
 
-
 // int n = -1;
 
 // const char* host_ip_addr = std::string("192.168.0.106").c_str();
-
 
 TcpClient::TcpClient() : sockfd_(-1), is_connected_(false)
 {
@@ -69,9 +67,9 @@ int TcpClient::connect2TcpServer(const char* _server_ip_addr, int _portno)
     }
 }
 
-int TcpClient::readFromTcpServer()
+int TcpClient::readFromTcpServer(char* _receive_data, size_t _len)
 {
-    if(read(sockfd_,buffer_,sizeof(buffer_)) < 0)
+    if(read(sockfd_, _receive_data, _len) < 0)
     {
         return kReadFromServerFailed;
     }

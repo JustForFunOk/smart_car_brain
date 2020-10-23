@@ -23,7 +23,8 @@ public:
         static TcpClient tcp_client;
         return tcp_client;
     }
-    int readFromTcpServer();
+    /// read process is blocked
+    int readFromTcpServer(char* _receive_data, size_t _len);
     int write2TcpServer(const char* _send_data, size_t _len);
     int connect2TcpServer(const char* server_ip_addr, int portno);
     inline bool isConnected() {return is_connected_;}
@@ -37,6 +38,5 @@ private:
 private:
     int sockfd_;
     bool is_connected_;
-    char buffer_[256];
 };
 } // namespace smart_car
