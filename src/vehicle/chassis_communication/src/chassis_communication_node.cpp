@@ -19,16 +19,12 @@ const double kGyroResolution = kGyroSensorRange / 32768.0;
 
 ::smart_car::TcpClient& tcp_client = ::smart_car::TcpClient::getSingleton();
 
-inline int16_t merge8bitTo16bit(uint8_t _high_8bit, uint8_t _low_8bit)
-{
-    return ((((int16_t)_high_8bit) << 8) | _low_8bit);
-}
-
 void decodeAccelData(const uint8_t* _start_bit, double& _accel_x, double& _accel_y, double& _accel_z)
 {
-    auto raw_accel_x = merge8bitTo16bit(*_start_bit, *(_start_bit+1));
-    auto raw_accel_y = merge8bitTo16bit(*(_start_bit+2), *(_start_bit+3));
-    auto raw_accel_z = merge8bitTo16bit(*(_start_bit+4), *(_start_bit+5));
+    int16_t raw_accel_x, raw_accel_y, raw_accel_z;
+    memcpy(&raw_accel_x, _start_bit, sizeof(int16_t));
+    memcpy(&raw_accel_y, _start_bit+sizeof(int16_t), sizeof(int16_t));
+    memcpy(&raw_accel_z, _start_bit+sizeof(int16_t)*2, sizeof(int16_t));
     // decode according to sensor config
     _accel_x = raw_accel_x * kAccelResolution;
     _accel_y = raw_accel_y * kAccelResolution;
@@ -37,9 +33,10 @@ void decodeAccelData(const uint8_t* _start_bit, double& _accel_x, double& _accel
 
 void decodeGyroData(const uint8_t* _start_bit, double& _gyro_x, double& _gyro_y, double& _gyro_z)
 {
-    auto raw_gyro_x = merge8bitTo16bit(*_start_bit, *(_start_bit+1));
-    auto raw_gyro_y = merge8bitTo16bit(*(_start_bit+2), *(_start_bit+3));
-    auto raw_gyro_z = merge8bitTo16bit(*(_start_bit+4), *(_start_bit+5));
+    int16_t raw_gyro_x, raw_gyro_y, raw_gyro_z;
+    memcpy(&raw_gyro_x, _start_bit, sizeof(int16_t));
+    memcpy(&raw_gyro_y, _start_bit+sizeof(int16_t), sizeof(int16_t));
+    memcpy(&raw_gyro_z, _start_bit+sizeof(int16_t)*2, sizeof(int16_t));
     // decode according to sensor config
     _gyro_x = raw_gyro_x * kGyroResolution;
     _gyro_y = raw_gyro_y * kGyroResolution;
