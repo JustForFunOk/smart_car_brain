@@ -1,0 +1,16 @@
+<launch>
+    <!--*********************************
+    **********   Launch Node   **********
+    **********************************-->
+    <!-- launch-prefix=\"xterm \-e gdb \-\-args\"
+    -->
+
+    <!-- declare arguments with default values -->
+    <arg name="tcp_server_ip"              default="192.168.3.99"/>
+    <arg name="portno"                     default="5000"/>
+
+    <node ns="chassis" name="chassis_communication" pkg="chassis_communication" type="chassis_communication_node" output="screen">
+        <param name="tcp_server_ip"      type="str"     value="$(arg tcp_server_ip)"/>
+        <param name="portno"             type="int"     value="$(arg portno)"/>
+    </node>
+</launch>
