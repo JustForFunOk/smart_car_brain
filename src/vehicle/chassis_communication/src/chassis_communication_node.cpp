@@ -1,6 +1,5 @@
 #include "tcp_client/tcp_client.h"
 #include "chassis_communication_node.h"
-#include "chassis_communication/ChassisRawData.h"
 
 namespace smart_car
 {
@@ -8,10 +7,52 @@ namespace chassis
 {
 
 const uint32_t kMultiThreadNum = 2;  // transmit thread and receive thread
-
+// Data
 const uint8_t kTransmitDataLength = 18;  // keep update
+// Accel
+const double kGravityAccelG = 9.794;  // shanghai
+const uint8_t kAccelSensorRange = 4; // +-4g
+const double kAccelResolution = kGravityAccelG * kAccelSensorRange / 32768.0;
+// Gyro
+const uint16_t kGyroSensorRange = 250; // +-250 degrees per second
+const double kGyroResolution = kGyroSensorRange / 32768.0;
 
 ::smart_car::TcpClient& tcp_client = ::smart_car::TcpClient::getSingleton();
+
+inline int16_t merge8bitTo16bit(uint8_t _high_8bit, uint8_t _low_8bit)
+{
+    return ((((int16_t)_high_8bit) << 8) | _low_8bit);
+}
+
+void decodeAccelData(const uint8_t* _start_bit, double& _accel_x, double& _accel_y, double& _accel_z)
+{
+    auto raw_accel_x = merge8bitTo16bit(*_start_bit, *(_start_bit+1));
+    auto raw_accel_y = merge8bitTo16bit(*(_start_bit+2), *(_start_bit+3));
+    auto raw_accel_z = merge8bitTo16bit(*(_start_bit+4), *(_start_bit+5));
+    // decode according to sensor config
+    _accel_x = raw_accel_x * kAccelResolution;
+    _accel_y = raw_accel_y * kAccelResolution;
+    _accel_z = raw_accel_z * kAccelResolution;
+}
+
+void decodeGyroData(const uint8_t* _start_bit, double& _gyro_x, double& _gyro_y, double& _gyro_z)
+{
+    auto raw_gyro_x = merge8bitTo16bit(*_start_bit, *(_start_bit+1));
+    auto raw_gyro_y = merge8bitTo16bit(*(_start_bit+2), *(_start_bit+3));
+    auto raw_gyro_z = merge8bitTo16bit(*(_start_bit+4), *(_start_bit+5));
+    // decode according to sensor config
+    _gyro_x = raw_gyro_x * kGyroResolution;
+    _gyro_y = raw_gyro_y * kGyroResolution;
+    _gyro_z = raw_gyro_z * kGyroResolution;
+}
+
+void decodeMagnetData(const uint8_t* _start_bit, double& _magnet_x, double& _magnet_y, double& _magnet_z)
+{
+    // magnet has no data
+    _magnet_x = 0;
+    _magnet_y = 0;
+    _magnet_z = 0;
+}
 
 void ChassisCommunicationNode::transmitMsgCallback(const std_msgs::String::ConstPtr& _msg)
 {
@@ -31,15 +72,28 @@ void ChassisCommunicationNode::receiveMsgCallback(const ros::TimerEvent&)
     bzero(rx_data, kTransmitDataLength);
     if ( ::smart_car::TcpClient::kSuccess == tcp_client.readFromTcpServer(rx_data, kTransmitDataLength) )
     {
-        printf("receive chassis msg\n");
-        chassis_communication::ChassisRawData chassis_raw_data;
-        chassis_raw_data.data = std::move(std::vector<uint8_t>(rx_data, rx_data+kTransmitDataLength));
-        pub_.publish(chassis_raw_data);
+        // raw chassis data
+        chassis_communication::ChassisRawData raw_chassis_data;
+        raw_chassis_data.data = std::move(std::vector<uint8_t>(rx_data, rx_data+kTransmitDataLength));
+        raw_data_pub_.publish(raw_chassis_data);
+
+        // decoded chassis data
+        chassis_communication::DecodedChassisData decoded_chassis_data;
+        decodeChassisData(raw_chassis_data, decoded_chassis_data);
+        decoded_data_pub_.publish(decoded_chassis_data);
     }
     else
     {
         printf("ERROR reading from socket\n");
     }
+}
+
+void ChassisCommunicationNode::decodeChassisData(const chassis_communication::ChassisRawData& _raw_chassis_data,
+                                                 chassis_communication::DecodedChassisData& _decoded_chassis_data)
+{
+    decodeAccelData(&_raw_chassis_data.data[0], _decoded_chassis_data.accel.x, _decoded_chassis_data.accel.y, _decoded_chassis_data.accel.z);
+    decodeGyroData(&_raw_chassis_data.data[6], _decoded_chassis_data.gyro.x, _decoded_chassis_data.gyro.y, _decoded_chassis_data.gyro.z);
+    decodeMagnetData(&_raw_chassis_data.data[12], _decoded_chassis_data.magnet.x, _decoded_chassis_data.magnet.y, _decoded_chassis_data.magnet.z);
 }
 
 void ChassisCommunicationNode::init()
@@ -59,7 +113,8 @@ void ChassisCommunicationNode::init()
     }
 
     timer_ = nh.createTimer(ros::Duration(0.1), &ChassisCommunicationNode::receiveMsgCallback, this);  // readFromTcpServer is blocked
-    pub_ = nh.advertise<chassis_communication::ChassisRawData>("chassis_raw_signal", 10);
+    raw_data_pub_ = nh.advertise<chassis_communication::ChassisRawData>("raw_chassis_signal", 10);
+    decoded_data_pub_ = nh.advertise<chassis_communication::DecodedChassisData>("decoded_chassis_signal", 10);
 
     sub_ = nh.subscribe("/chassis_control_cmd", 10, &ChassisCommunicationNode::transmitMsgCallback, this);
 
