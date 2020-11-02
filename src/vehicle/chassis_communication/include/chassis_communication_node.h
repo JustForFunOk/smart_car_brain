@@ -1,5 +1,6 @@
 # pragma once
 
+#include "tcp_client/tcp_client.h"
 #include "chassis_communication/ChassisRawData.h"
 #include "chassis_communication/DecodedChassisData.h"
 #include <ros/ros.h>
@@ -13,7 +14,7 @@ namespace chassis
 class ChassisCommunicationNode
 {
 public:
-    ChassisCommunicationNode() = default;
+    ChassisCommunicationNode();
     ~ChassisCommunicationNode() = default;
     void init();
     void run();
@@ -29,6 +30,8 @@ private:
     ros::Publisher raw_data_pub_;
     ros::Publisher decoded_data_pub_;
     ros::Subscriber sub_;
+
+    ::smart_car::TcpClient& tcp_client_;
 };
 
 } // namespace chassis

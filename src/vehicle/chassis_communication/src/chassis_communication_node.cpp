@@ -1,4 +1,3 @@
-#include "tcp_client/tcp_client.h"
 #include "chassis_communication_node.h"
 
 namespace smart_car
@@ -16,8 +15,6 @@ const double kAccelResolution = kGravityAccelG * kAccelSensorRange / 32768.0;
 // Gyro
 const uint16_t kGyroSensorRange = 250; // +-250 degrees per second
 const double kGyroResolution = kGyroSensorRange / 32768.0;
-
-::smart_car::TcpClient& tcp_client = ::smart_car::TcpClient::getSingleton();
 
 void decodeAccelData(const uint8_t* _start_bit, double& _accel_x, double& _accel_y, double& _accel_z)
 {
@@ -55,7 +52,7 @@ void ChassisCommunicationNode::transmitMsgCallback(const std_msgs::String::Const
 {
     printf("get control cmd\n");
     // get msg from topic and send to tcp server
-    if ( ::smart_car::TcpClient::kSuccess != tcp_client.write2TcpServer(_msg->data.c_str(), _msg->data.size()) )
+    if ( ::smart_car::TcpClient::kSuccess != tcp_client_.write2TcpServer(_msg->data.c_str(), _msg->data.size()) )
     {
         printf("ERROR write to tcp server\n");
     }
@@ -63,11 +60,10 @@ void ChassisCommunicationNode::transmitMsgCallback(const std_msgs::String::Const
 
 void ChassisCommunicationNode::receiveMsgCallback(const ros::TimerEvent&)
 {
-    printf("wait for chassis msg\n");
     char rx_data[kTransmitDataLength];
     // get msg from tcp server and send to topic
-    bzero(rx_data, kTransmitDataLength);
-    if ( ::smart_car::TcpClient::kSuccess == tcp_client.readFromTcpServer(rx_data, kTransmitDataLength) )
+    // bzero(rx_data, kTransmitDataLength);
+    if ( ::smart_car::TcpClient::kSuccess == tcp_client_.readFromTcpServer(rx_data, kTransmitDataLength) )
     {
         // raw chassis data
         chassis_communication::ChassisRawData raw_chassis_data;
@@ -91,6 +87,10 @@ void ChassisCommunicationNode::decodeChassisData(const chassis_communication::Ch
     decodeAccelData(&_raw_chassis_data.data[0], _decoded_chassis_data.accel.x, _decoded_chassis_data.accel.y, _decoded_chassis_data.accel.z);
     decodeGyroData(&_raw_chassis_data.data[6], _decoded_chassis_data.gyro.x, _decoded_chassis_data.gyro.y, _decoded_chassis_data.gyro.z);
     decodeMagnetData(&_raw_chassis_data.data[12], _decoded_chassis_data.magnet.x, _decoded_chassis_data.magnet.y, _decoded_chassis_data.magnet.z);
+}
+
+ChassisCommunicationNode::ChassisCommunicationNode() : tcp_client_(::smart_car::TcpClient::getSingleton())
+{
 }
 
 void ChassisCommunicationNode::init()
@@ -118,9 +118,9 @@ void ChassisCommunicationNode::init()
     ros::Rate try_connect_rate_hz(1);  // try connect every 1 second
 
     // connect
-    while (!tcp_client.isConnected())
+    while (!tcp_client_.isConnected())
     {
-        auto connect_status = tcp_client.connect2TcpServer(tcp_server_ip.c_str(), portno);
+        auto connect_status = tcp_client_.connect2TcpServer(tcp_server_ip.c_str(), portno);
         if (::smart_car::TcpClient::kSuccess == connect_status)
         {
             printf("Connect successful\n");
