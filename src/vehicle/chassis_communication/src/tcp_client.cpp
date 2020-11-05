@@ -9,10 +9,8 @@
 
 namespace smart_car
 {
-
-// int n = -1;
-
-// const char* host_ip_addr = std::string("192.168.0.106").c_str();
+namespace chassis
+{
 
 TcpClient::TcpClient() : sockfd_(-1), is_connected_(false)
 {
@@ -24,7 +22,7 @@ TcpClient::~TcpClient()
     close(sockfd_);
 }
 
-int TcpClient::connect2TcpServer(const char* _server_ip_addr, int _portno)
+TcpStatus TcpClient::connect2TcpServer(const char* _server_ip_addr, int _portno)
 {
     // open socket
     sockfd_ = socket(AF_INET, SOCK_STREAM, 0);
@@ -33,7 +31,7 @@ int TcpClient::connect2TcpServer(const char* _server_ip_addr, int _portno)
         // ERROR, opening socket
         // printf("ERROR, opening socket\n");
         is_connected_ = false;
-        return kSocketOpenFailed;
+        return TcpStatus::kSocketOpenFailed;
     }
 
     struct hostent *server;
@@ -43,7 +41,7 @@ int TcpClient::connect2TcpServer(const char* _server_ip_addr, int _portno)
         // ERROR, no such host ip
         // printf("ERROR, no such host name: %s\n", _server_ip_addr);
         is_connected_ = false;
-        return kTcpServerIpInvalid;
+        return TcpStatus::kTcpServerIpInvalid;
     }
 
     struct sockaddr_in serv_addr;
@@ -58,37 +56,38 @@ int TcpClient::connect2TcpServer(const char* _server_ip_addr, int _portno)
         // ERROR connecting
         // printf("ERROR, can not connect, try connect again after 1s\n");
         is_connected_ = false;
-        return kConnectFailed;
+        return TcpStatus::kConnectFailed;
     }
     else
     {
         is_connected_ = true;
-        return kSuccess;
+        return TcpStatus::kSuccess;
     }
 }
 
-int TcpClient::readFromTcpServer(char* _receive_data, size_t _len)
+TcpStatus TcpClient::readFromTcpServer(char* _receive_data, size_t _len)
 {
     if(read(sockfd_, _receive_data, _len) < 0)
     {
-        return kReadFromServerFailed;
+        return TcpStatus::kReadFromServerFailed;
     }
     else
     {
-        return kSuccess;
+        return TcpStatus::kSuccess;
     }
 }
 
-int TcpClient::write2TcpServer(const char* _send_data, size_t _len)
+TcpStatus TcpClient::write2TcpServer(const char* _send_data, size_t _len)
 {
     if (write(sockfd_, _send_data, _len) < 0)
     {
-        return kWriteToServerFailed;
+        return TcpStatus::kWriteToServerFailed;
     }
     else
     {
-        return kSuccess;
+        return TcpStatus::kSuccess;
     }
 }
 
+} // namespace chassis
 } // namespace smart_car

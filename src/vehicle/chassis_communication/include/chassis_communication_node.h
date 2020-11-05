@@ -31,7 +31,7 @@ private:
     ros::Publisher decoded_data_pub_;
     ros::Subscriber sub_;
 
-    ::smart_car::TcpClient& tcp_client_;
+    ::smart_car::chassis::TcpClient& tcp_client_;
 };
 
 } // namespace chassis
