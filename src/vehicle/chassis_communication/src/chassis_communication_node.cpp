@@ -15,6 +15,9 @@ const double kAccelResolution = kGravityAccelG * kAccelSensorRange / 32768.0;
 // Gyro
 const uint16_t kGyroSensorRange = 250; // +-250 degrees per second
 const double kGyroResolution = kGyroSensorRange / 32768.0;
+// Magnet
+const uint16_t kMagnetSensorRange = 4800; // +-4800 uT
+const double kMagnetResolution = kMagnetSensorRange / 32768.0; // TODO: check the value;
 
 void decodeAccelData(const uint8_t* _start_bit, double& _accel_x, double& _accel_y, double& _accel_z)
 {
@@ -42,10 +45,14 @@ void decodeGyroData(const uint8_t* _start_bit, double& _gyro_x, double& _gyro_y,
 
 void decodeMagnetData(const uint8_t* _start_bit, double& _magnet_x, double& _magnet_y, double& _magnet_z)
 {
-    // magnet has no data
-    _magnet_x = 0;
-    _magnet_y = 0;
-    _magnet_z = 0;
+    int16_t raw_magnet_x, raw_magnet_y, raw_magnet_z;
+    memcpy(&raw_magnet_x, _start_bit, sizeof(int16_t));
+    memcpy(&raw_magnet_y, _start_bit+sizeof(int16_t), sizeof(int16_t));
+    memcpy(&raw_magnet_z, _start_bit+sizeof(int16_t)*2, sizeof(int16_t));
+    // decode according to sensor config
+    _magnet_x = raw_magnet_x * kMagnetResolution;
+    _magnet_y = raw_magnet_y * kMagnetResolution;
+    _magnet_z = raw_magnet_z * kMagnetResolution;
 }
 
 void ChassisCommunicationNode::transmitMsgCallback(const std_msgs::String::ConstPtr& _msg)
