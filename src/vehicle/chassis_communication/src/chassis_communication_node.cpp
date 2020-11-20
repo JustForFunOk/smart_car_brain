@@ -59,7 +59,7 @@ void ChassisCommunicationNode::transmitMsgCallback(const std_msgs::String::Const
 {
     printf("get control cmd\n");
     // get msg from topic and send to tcp server
-    if ( ::smart_car::TcpClient::kSuccess != tcp_client_.write2TcpServer(_msg->data.c_str(), _msg->data.size()) )
+    if ( TcpStatus::kSuccess != tcp_client_.write2TcpServer(_msg->data.c_str(), _msg->data.size()) )
     {
         printf("ERROR write to tcp server\n");
     }
@@ -70,7 +70,7 @@ void ChassisCommunicationNode::receiveMsgCallback(const ros::TimerEvent&)
     char rx_data[kTransmitDataLength];
     // get msg from tcp server and send to topic
     // bzero(rx_data, kTransmitDataLength);
-    if ( ::smart_car::TcpClient::kSuccess == tcp_client_.readFromTcpServer(rx_data, kTransmitDataLength) )
+    if ( TcpStatus::kSuccess == tcp_client_.readFromTcpServer(rx_data, kTransmitDataLength) )
     {
         // raw chassis data
         chassis_communication::ChassisRawData raw_chassis_data;
@@ -96,7 +96,7 @@ void ChassisCommunicationNode::decodeChassisData(const chassis_communication::Ch
     decodeMagnetData(&_raw_chassis_data.data[12], _decoded_chassis_data.magnet.x, _decoded_chassis_data.magnet.y, _decoded_chassis_data.magnet.z);
 }
 
-ChassisCommunicationNode::ChassisCommunicationNode() : tcp_client_(::smart_car::TcpClient::getSingleton())
+ChassisCommunicationNode::ChassisCommunicationNode() : tcp_client_(TcpClient::getSingleton())
 {
 }
 
@@ -128,13 +128,13 @@ void ChassisCommunicationNode::init()
     while (!tcp_client_.isConnected())
     {
         auto connect_status = tcp_client_.connect2TcpServer(tcp_server_ip.c_str(), portno);
-        if (::smart_car::TcpClient::kSuccess == connect_status)
+        if (TcpStatus::kSuccess == connect_status)
         {
             printf("Connect successful\n");
         }
         else
         {
-            printf("Connect failed, error code: %d\n", connect_status);
+            printf("Connect failed, error code: %d\n", static_cast<int>(connect_status));
             try_connect_rate_hz.sleep();
         }
     }
