@@ -1,0 +1,16 @@
+<launch>
+    <!--*********************************
+    **********   Launch Node   **********
+    **********************************-->
+    <!-- launch-prefix=\"xterm \-e gdb \-\-args\"
+    -->
+
+    <!-- declare arguments with default values -->
+    <arg name="topic_in_9axis_raw"              default="/chassis/chassis_communication/decoded_chassis_signal"/>
+    <arg name="topic_out_9axis_fusion"          default="fusion"/>
+
+    <node ns="sensor/imu" name="imu_fusion" pkg="imu_fusion" type="imu_fusion_node" output="screen">
+        <param name="topic_in_9axis_raw"     type="str"     value="$(arg topic_in_9axis_raw)"/>
+        <param name="topic_out_9axis_fusion" type="str"     value="$(arg topic_out_9axis_fusion)"/>
+    </node>
+</launch>
