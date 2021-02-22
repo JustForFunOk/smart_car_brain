@@ -20,3 +20,4 @@ function kill_process()
 }
 
 kill_process ros
+kill_pricess chassis
