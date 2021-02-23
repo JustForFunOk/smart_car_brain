@@ -1,3 +1,7 @@
 #!/bin/bash
-# realsense d435
-roslaunch realsense2_camera rs_camera.launch & 
+
+# change mode for lidar usb port
+sudo chmod 666 /dev/ttyUSB0
+
+# start all from all_in_one.launch
+roslaunch startup_entry all_in_one.launch &
