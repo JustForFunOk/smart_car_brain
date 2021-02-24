@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ~/smart_car/smart_car_brain/devel/setup.bash
+
 # change mode for lidar usb port
 sudo chmod 666 /dev/ttyUSB0
 
