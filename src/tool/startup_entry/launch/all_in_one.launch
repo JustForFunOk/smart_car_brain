@@ -1,0 +1,25 @@
+<launch>
+    <!--*********************************
+    **********   Launch Node   **********
+    **********************************-->
+    <!-- launch-prefix=\"xterm \-e gdb \-\-args\"
+    -->
+
+    <!-- declare arguments with default values -->
+    <!-- <arg name="frame_id"                       default="ibeo_axis" /> -->
+
+    <!-- chassis -->
+    <include file="$(find chassis_communication)/launch/chassis_tx_rx.launch" >
+    </include>
+
+    <!-- camera -->
+    <include file="$(find realsense2_camera)/launch/rs_camera.launch" >
+        <!-- <arg name="tf_child_frame_id" value="$(arg frame_id)" /> -->
+    </include>
+
+    <!-- lidar -->
+    <include file="$(find rplidar_ros)/launch/rplidar.launch" >
+        <!-- <arg name="tf_child_frame_id" value="$(arg frame_id)" /> -->
+    </include>
+
+</launch>
