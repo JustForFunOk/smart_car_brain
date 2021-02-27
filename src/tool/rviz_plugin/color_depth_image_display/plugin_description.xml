@@ -1,5 +1,5 @@
 <library path="lib/libcolor_depth_image_display">
-    <class name="color_depth_image_display/DepthImage" type="::smart_car::ColorDepthImageDisplay"
+    <class name="color_depth_image_display/DepthImage" type="smart_car::ColorDepthImageDisplay"
            base_class_type="rviz::Display">
         <description>
             Displays colorful depth image.
