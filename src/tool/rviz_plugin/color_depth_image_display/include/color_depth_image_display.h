@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_IMAGE_DISPLAY_H
-#define RVIZ_IMAGE_DISPLAY_H
+#ifndef RVIZ_COLOR_DEPTH_IMAGE_DISPLAY_H
+#define RVIZ_COLOR_DEPTH_IMAGE_DISPLAY_H
 
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 #include <QObject>
@@ -44,6 +44,8 @@
 #include "rviz/properties/bool_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/int_property.h"
+
+#include "colorizer.h"
 #endif
 
 
@@ -87,6 +89,8 @@ private:
   void clear();
   void updateStatus();
 
+  sensor_msgs::Image::ConstPtr colorizeDepthImage(const sensor_msgs::Image::ConstPtr& msg);
+
   Ogre::SceneManager* img_scene_manager_;
   Ogre::SceneNode* img_scene_node_;
   Ogre::Rectangle2D* screen_rect_;
@@ -101,6 +105,8 @@ private:
   ::rviz::FloatProperty* max_property_;
   ::rviz::IntProperty* median_buffer_size_property_;
   bool got_float_image_;
+
+  ::smart_car::Colorizer colorizer_;
 };
 
 } // namespace smart_car
