@@ -242,7 +242,47 @@ void ColorDepthImageDisplay::processMessage(const sensor_msgs::Image::ConstPtr& 
     got_float_image_ = got_float_image;
     updateNormalizeOptions();
   }
-  texture_.addMessage(msg);
+
+// void addMessage(const sensor_msgs::Image::ConstPtr& image);
+// void ROSImageTexture::addMessage(const sensor_msgs::Image::ConstPtr& msg)
+// {
+//   boost::mutex::scoped_lock lock(mutex_);
+//   current_image_ = msg;
+//   new_image_ = true;
+// }
+  texture_.addMessage(colorizeDepthImage(msg));
+}
+
+sensor_msgs::Image::ConstPtr ColorDepthImageDisplay::colorizeDepthImage(const sensor_msgs::Image::ConstPtr& _depth_raw_img)
+{
+  ::sensor_msgs::Image color_depth_img;
+
+  // header
+
+  // height
+  color_depth_img.height = _depth_raw_img->height;
+
+  // width
+  color_depth_img.width = _depth_raw_img->width;
+
+  // encoding: 16UC1 to RGB8
+  color_depth_img.encoding = ::sensor_msgs::image_encodings::RGB8;
+
+  // is_bigendian
+  color_depth_img.is_bigendian = _depth_raw_img->is_bigendian;
+
+  // step
+  color_depth_img.step = color_depth_img.width * 3; // 1 pixel(R,G,B) = 3Bytes
+
+  // data
+  // color_depth_img.data.resize(color_depth_img.step * color_depth_img.height);
+  if(_depth_raw_img->encoding == ::sensor_msgs::image_encodings::TYPE_16UC1)
+  {
+    color_depth_img.data = colorizer_.process_frame(_depth_raw_img->data, 2);
+  }  
+  
+
+  return ::std::make_shared<::sensor_msgs::Image>(color_depth_img);
 }
 
 } // namespace rviz
