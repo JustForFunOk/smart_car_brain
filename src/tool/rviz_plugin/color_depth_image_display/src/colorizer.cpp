@@ -1,7 +1,12 @@
 #include "colorizer.h"
 
-Colorizer::Colorizer(/* args */)
+namespace smart_car
 {
+
+Colorizer::Colorizer()
+{
+    histogram_ = std::vector<int>(MAX_DEPTH, 0);
+    hist_data_ = histogram_.data();
 }
 
 Colorizer::~Colorizer()
@@ -14,9 +19,11 @@ Colorizer::~Colorizer()
     // uint16
     if(_pixel_step == 2)
     {
-        auto depth_data = reinterpret_cast<const uint16_t*>(_raw_depth_data.);
-        update_histogram();
+        auto depth_data = reinterpret_cast<const uint16_t*>(_raw_depth_data.data());
+        update_histogram(hist_data_, depth_data, _raw_depth_data.size() / _pixel_step);
     }
     
     
 }
+
+} // namespace smart_car
