@@ -30,6 +30,6 @@ catkin_package(
 
 qt5_wrap_cpp(${PROJECT_NAME}_MOCS include/color_depth_image_display.h)
 
-add_library(${PROJECT_NAME} src/color_depth_image_display.cpp ${${PROJECT_NAME}_MOCS})
+add_library(${PROJECT_NAME} src/color_depth_image_display.cpp src/colorizer.cpp ${${PROJECT_NAME}_MOCS})
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} Qt5::Core Qt5::Gui)

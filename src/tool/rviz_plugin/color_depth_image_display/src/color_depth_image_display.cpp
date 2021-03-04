@@ -253,7 +253,7 @@ void ColorDepthImageDisplay::processMessage(const sensor_msgs::Image::ConstPtr& 
   texture_.addMessage(colorizeDepthImage(msg));
 }
 
-sensor_msgs::Image::ConstPtr ColorDepthImageDisplay::colorizeDepthImage(const sensor_msgs::Image::ConstPtr& _depth_raw_img)
+const sensor_msgs::Image::ConstPtr& ColorDepthImageDisplay::colorizeDepthImage(const sensor_msgs::Image::ConstPtr& _depth_raw_img)
 {
   ::sensor_msgs::Image color_depth_img;
 
@@ -282,7 +282,7 @@ sensor_msgs::Image::ConstPtr ColorDepthImageDisplay::colorizeDepthImage(const se
   }  
   
 
-  return ::std::make_shared<::sensor_msgs::Image>(color_depth_img);
+  return _depth_raw_img;
 }
 
 } // namespace rviz
