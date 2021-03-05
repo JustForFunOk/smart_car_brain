@@ -119,12 +119,11 @@ public:
     /**
      * Convert raw depth data to colorful RGB depth data
      * 
-     * \param[in] _raw_depth_data the depth data to be processed.
-     * \param[in] _pixel_step     the Byte of one pixel. Such as, 16bit(2)
-     * \return RGB depth data
+     * \param[in&out] pixel_data [in] the depth data to be processed.
+     *                           [out] RGB depth data
+     * \param[in] pixel_step     the Byte of one pixel. Such as, 16bit(2)
      */
-    ::std::vector<uint8_t> process_frame(const ::std::vector<uint8_t>& _raw_depth_data,
-                                         uint8_t _pixel_step);
+    void process_frame(::std::vector<uint8_t>& pixel_data, uint8_t pixel_step);
 
 public:
     static const int MAX_DEPTH = 65536;
@@ -132,18 +131,18 @@ public:
 private:
 
     template <typename T>
-    static void update_histogram(int* hist, const T* depth_data, int data_cnt)
+    static void update_histogram(int* hist, const T* depth_data, size_t pixel_cnt)
     {
         memset(hist, 0, MAX_DEPTH * sizeof(int));
 
-        for(auto i = 0; i < data_cnt; ++i)
+        for(size_t i = 0; i < pixel_cnt; ++i)
         {
             T depth_val = depth_data[i];
             int index = static_cast<int>(depth_val);
             hist[index] += 1;
         }
 
-        for(auto i = 2; i < MAX_DEPTH; ++i)
+        for(size_t i = 2; i < MAX_DEPTH; ++i)
         {
             hist[i] += hist[i-1];  // Build a cumulative histogram for the indices in [1,0xFFFF]
         }
@@ -151,11 +150,11 @@ private:
 
 
     template<typename T, typename F>
-    void make_rgb_data(const T* depth_data, int data_cnt, uint8_t* rgb_data, F coloring_func)
+    void make_rgb_data(T* depth_data, size_t pixel_cnt, uint8_t* rgb_data, F coloring_func)
     {
         auto color_map = color_maps_[maps_index_];  // choose convert style
         
-        for(auto i = 0; i < data_cnt; ++i)
+        for(size_t i = 0; i < pixel_cnt; ++i)
         {
             auto depth = depth_data[i];
             colorize_pixel(depth, rgb_data+3*i, color_map, coloring_func);
@@ -165,7 +164,21 @@ private:
     template<typename T, typename F>
     void colorize_pixel(T depth, uint8_t* rgb_pixel, ColorMap* color_map, F coloring_func)
     {
-
+        if(depth)
+        {
+            auto f = coloring_func(depth);
+            auto c = color_map->get(f);
+            rgb_pixel[0] = static_cast<uint8_t>(c.x);
+            rgb_pixel[1] = static_cast<uint8_t>(c.y);
+            rgb_pixel[2] = static_cast<uint8_t>(c.z);
+        }
+        else
+        {
+            rgb_pixel[0] = 0;
+            rgb_pixel[1] = 0;
+            rgb_pixel[2] = 0;
+        }
+        
     }
 
 private:
