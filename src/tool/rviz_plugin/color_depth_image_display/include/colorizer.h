@@ -1,42 +1,60 @@
 #pragma once 
 
 #include <vector>
+#include <map>
 #include <cstdint>  // uint8_t
+#include <cstring>  // memset
 
 namespace smart_car
 {
 
-class color_map
+// Enhancement for debug mode that incurs performance penalty with STL
+// std::clamp to be introduced with c++17
+template< typename T>
+inline T clamp_val(T val, const T& min, const T& max)
+{
+    static_assert((std::is_arithmetic<T>::value), "clamping supports arithmetic built-in types only");
+#ifdef _DEBUG
+    const T t = val < min ? min : val;
+    return t > max ? max : t;
+#else
+    return std::min(std::max(val, min), max);
+#endif
+}
+
+#pragma pack(push, 1)
+struct float3 { float x, y, z; float & operator [] (int i) { return (&x)[i]; } };
+#pragma pack(pop)
+inline bool operator == (const float3 & a, const float3 & b) { return a.x == b.x && a.y == b.y && a.z == b.z; }
+inline float3 operator + (const float3 & a, const float3 & b) { return{ a.x + b.x, a.y + b.y, a.z + b.z }; }
+inline float3 operator - (const float3 & a, const float3 & b) { return{ a.x - b.x, a.y - b.y, a.z - b.z }; }
+inline float3 operator * (const float3 & a, float b) { return{ a.x*b, a.y*b, a.z*b }; }
+
+
+class ColorMap
 {
 public:
-    color_map(std::map<float, float3> map, int steps = 4000) : _map(map)
+    ColorMap(const std::vector<float3>& values, int steps = 4000)
     {
-        initialize(steps);
-    }
-
-    color_map(const std::vector<float3>& values, int steps = 4000)
-    {
-        for (size_t i = 0; i < values.size(); i++)
+        for(size_t i = 0; i < values.size(); ++i)
         {
-            _map[(float)i / (values.size() - 1)] = values[i];
+            map_[static_cast<float>(i)/(values.size()-1)] = values[i];
         }
         initialize(steps);
     }
 
-    color_map() {}
-
     inline float3 get(float value) const
     {
-        if (_max == _min) return *_data;
-        auto t = (value - _min) / (_max - _min);
+        if (max_ == min_) return *data_;
+        auto t = (value - min_) / (max_ - min_);
         t = clamp_val(t, 0.f, 1.f);
-        return _data[(int)(t * (_size - 1))];
+        return data_[(int)(t * (size_ - 1))];
     }
 
-    float min_key() const { return _min; }
-    float max_key() const { return _max; }
+    float min_key() const { return min_; }
+    float max_key() const { return max_; }
 
-    const std::vector<float3>& get_cache() const { return _cache; }
+    const std::vector<float3>& get_cache() const { return cache_; }
 
 private:
     inline float3 lerp(const float3& a, const float3& b, float t) const
@@ -46,15 +64,15 @@ private:
 
     float3 calc(float value) const
     {
-        if (_map.size() == 0) return{ value, value, value };
+        if (map_.size() == 0) return{ value, value, value };
         // if we have exactly this value in the map, just return it
-        if (_map.find(value) != _map.end()) return _map.at(value);
+        if (map_.find(value) != map_.end()) return map_.at(value);
         // if we are beyond the limits, return the first/last element
-        if (value < _map.begin()->first)   return _map.begin()->second;
-        if (value > _map.rbegin()->first)  return _map.rbegin()->second;
+        if (value < map_.begin()->first)   return map_.begin()->second;
+        if (value > map_.rbegin()->first)  return map_.rbegin()->second;
 
-        auto lower = _map.lower_bound(value) == _map.begin() ? _map.begin() : --(_map.lower_bound(value));
-        auto upper = _map.upper_bound(value);
+        auto lower = map_.lower_bound(value) == map_.begin() ? map_.begin() : --(map_.lower_bound(value));
+        auto upper = map_.upper_bound(value);
 
         auto t = (value - lower->first) / (upper->first - lower->first);
         auto c1 = lower->second;
@@ -64,28 +82,32 @@ private:
 
     void initialize(int steps)
     {
-        if (_map.size() == 0) return;
+        if(map_.empty()) return;
 
-        _min = _map.begin()->first;
-        _max = _map.rbegin()->first;
+        min_ = map_.begin()->first;  // 0.0
+        max_ = map_.rbegin()->first;  // 1.0
 
-        _cache.resize(steps + 1);
-        for (int i = 0; i <= steps; i++)
+        // divide color map into <steps> level
+        cache_.resize(steps+1);
+        for(int i = 0; i <= steps; ++i)
         {
             auto t = (float)i / steps;
-            auto x = _min + t*(_max - _min);
-            _cache[i] = calc(x);
+            auto x = min_ + t*(max_ - min_);
+            cache_[i] = calc(x); 
         }
 
         // Save size and data to avoid STL checks penalties in DEBUG
-        _size = _cache.size();
-        _data = _cache.data();
+        size_ = cache_.size();
+        data_ = cache_.data();
     }
 
-    std::map<float, float3> _map;
-    std::vector<float3> _cache;
-    float _min, _max;
-    size_t _size; float3* _data;
+private:
+    std::map<float, float3> map_;  // float key?
+
+    float min_, max_;
+    std::vector<float3> cache_;
+    size_t size_;
+    float3* data_;
 };
 
 class Colorizer
@@ -141,7 +163,7 @@ private:
     }
 
     template<typename T, typename F>
-    void colorize_pixel(T depth, uint8_t* rgb_pixel, color_map* color_map, F coloring_func)
+    void colorize_pixel(T depth, uint8_t* rgb_pixel, ColorMap* color_map, F coloring_func)
     {
 
     }
@@ -151,7 +173,7 @@ private:
     std::vector<int> histogram_;
     int* hist_data_;
 
-    std::vector<color_map*> color_maps_;
+    std::vector<ColorMap*> color_maps_;
     int maps_index_ = 0;
 };
 

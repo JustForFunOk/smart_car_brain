@@ -13,7 +13,7 @@ Colorizer::~Colorizer()
 {
 }
 
-::std::vector<uint8_t> Colorizer::process_frame(const ::std::vector<uint8_t>& _raw_depth_data
+::std::vector<uint8_t> Colorizer::process_frame(const ::std::vector<uint8_t>& _raw_depth_data,
                                                 uint8_t _pixel_step)
 {
     // uint16
@@ -23,7 +23,7 @@ Colorizer::~Colorizer()
         update_histogram(hist_data_, depth_data, _raw_depth_data.size() / _pixel_step);
     }
     
-    
+    return _raw_depth_data;
 }
 
 } // namespace smart_car
