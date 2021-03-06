@@ -252,7 +252,6 @@ void ColorDepthImageDisplay::processMessage(const sensor_msgs::Image::ConstPtr& 
 // }
   if(1) // enable
   {
-    
     colorizeDepthImage(const_cast<sensor_msgs::Image*>(msg.get()));
   }
 
@@ -276,10 +275,12 @@ void ColorDepthImageDisplay::colorizeDepthImage(sensor_msgs::Image* img)
 
   // data
   // color_depth_img.data.resize(color_depth_img.step * color_depth_img.height);
-  if(img->encoding == ::sensor_msgs::image_encodings::TYPE_16UC1)
-  {
+  // if(img->encoding == ::sensor_msgs::image_encodings::TYPE_16UC1)
+  // {
+
     colorizer_.process_frame(img->data, 2);
-  }  
+
+  // }  
 }
 
 } // namespace rviz

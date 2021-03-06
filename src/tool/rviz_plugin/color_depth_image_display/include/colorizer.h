@@ -153,7 +153,6 @@ private:
     void make_rgb_data(T* depth_data, size_t pixel_cnt, uint8_t* rgb_data, F coloring_func)
     {
         auto color_map = color_maps_[maps_index_];  // choose convert style
-        
         for(size_t i = 0; i < pixel_cnt; ++i)
         {
             auto depth = depth_data[i];
