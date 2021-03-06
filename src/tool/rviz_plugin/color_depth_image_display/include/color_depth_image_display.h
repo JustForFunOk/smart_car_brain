@@ -89,7 +89,7 @@ private:
   void clear();
   void updateStatus();
 
-  void colorizeDepthImage(sensor_msgs::Image::ConstPtr& img);
+  void colorizeDepthImage(sensor_msgs::Image* img);
 
   Ogre::SceneManager* img_scene_manager_;
   Ogre::SceneNode* img_scene_node_;

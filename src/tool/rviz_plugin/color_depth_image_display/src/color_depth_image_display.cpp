@@ -252,13 +252,14 @@ void ColorDepthImageDisplay::processMessage(const sensor_msgs::Image::ConstPtr& 
 // }
   if(1) // enable
   {
-    colorizeDepthImage(const_cast<sensor_msgs::Image::Ptr&>(msg));
+    
+    colorizeDepthImage(const_cast<sensor_msgs::Image*>(msg.get()));
   }
 
   texture_.addMessage(msg);
 }
 
-void ColorDepthImageDisplay::colorizeDepthImage(sensor_msgs::Image::Ptr& img)
+void ColorDepthImageDisplay::colorizeDepthImage(sensor_msgs::Image* img)
 {
   // header
 
@@ -271,7 +272,7 @@ void ColorDepthImageDisplay::colorizeDepthImage(sensor_msgs::Image::Ptr& img)
   // is_bigendian
 
   // step
-  img->step = color_depth_img.width * 3; // 1 pixel(R,G,B) = 3Bytes
+  img->step = img->width * 3; // 1 pixel(R,G,B) = 3Bytes
 
   // data
   // color_depth_img.data.resize(color_depth_img.step * color_depth_img.height);

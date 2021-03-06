@@ -30,6 +30,8 @@ void Colorizer::process_frame(::std::vector<uint8_t>& pixel_data, uint8_t pixel_
 
         std::vector<uint8_t> rgb_pixel_data(3*pixel_cnt, 0);
         make_rgb_data<uint16_t>(raw_depth_data, pixel_cnt, rgb_pixel_data.data(), coloring_function);
+
+        pixel_data = rgb_pixel_data;
     }
 }
 
