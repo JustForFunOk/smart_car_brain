@@ -129,6 +129,17 @@ public:
     static const int MAX_DEPTH = 65536;
 
 private:
+    template <typename T, typename F>
+    void process_depth_data(::std::vector<uint8_t>& pixel_data, size_t pixel_cnt, F coloring_func)
+    {
+        auto raw_depth_data = reinterpret_cast<T*>(pixel_data.data());
+
+        update_histogram(hist_data_, raw_depth_data, pixel_cnt);
+
+        make_rgb_data(raw_depth_data, pixel_cnt, rgb_pixel_data_.data(), coloring_func);
+
+        pixel_data = rgb_pixel_data_;
+    }
 
     template <typename T>
     static void update_histogram(int* hist, const T* depth_data, size_t pixel_cnt)
@@ -186,7 +197,10 @@ private:
     int* hist_data_;
 
     std::vector<ColorMap*> color_maps_;
-    int maps_index_ = 0;
+    uint8_t maps_index_ = 0;
+
+    std::vector<uint8_t> rgb_pixel_data_;
+    size_t pixel_cnt_;
 };
 
 } // namespace smart_car

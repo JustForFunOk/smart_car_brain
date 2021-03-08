@@ -260,27 +260,18 @@ void ColorDepthImageDisplay::processMessage(const sensor_msgs::Image::ConstPtr& 
 
 void ColorDepthImageDisplay::colorizeDepthImage(sensor_msgs::Image* img)
 {
-  // header
+  // keep header, height, width, is_bigendian unchanged
 
-  // height
-  // width
+  auto pixel_step = img->step / img->width;
 
-  // encoding: 16UC1 to RGB8
+  // encoding
   img->encoding = ::sensor_msgs::image_encodings::RGB8;
-
-  // is_bigendian
-
+  
   // step
   img->step = img->width * 3; // 1 pixel(R,G,B) = 3Bytes
 
   // data
-  // color_depth_img.data.resize(color_depth_img.step * color_depth_img.height);
-  // if(img->encoding == ::sensor_msgs::image_encodings::TYPE_16UC1)
-  // {
-
-    colorizer_.process_frame(img->data, 2);
-
-  // }  
+  colorizer_.process_frame(img->data, pixel_step); 
 }
 
 } // namespace rviz
