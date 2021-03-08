@@ -104,9 +104,11 @@ private:
   ::rviz::FloatProperty* min_property_;
   ::rviz::FloatProperty* max_property_;
   ::rviz::IntProperty* median_buffer_size_property_;
+  ::rviz::BoolProperty* color_depth_switch_property_;
   bool got_float_image_;
 
   ::smart_car::Colorizer colorizer_;
+  bool is_coloried_;
 };
 
 } // namespace smart_car

@@ -71,7 +71,12 @@ ColorDepthImageDisplay::ColorDepthImageDisplay()
   median_buffer_size_property_ = new ::rviz::IntProperty( "Median window", 5, "Window size for median filter used for computin min/max.",
                                                   this, SLOT( updateNormalizeOptions() ) );
 
+  color_depth_switch_property_ = new ::rviz::BoolProperty( "Color Depth", true, "Switch between enable and disable colorized depth data.",
+                                                  this, SLOT( updateNormalizeOptions() ) );
+
   got_float_image_ = false;
+
+  is_coloried_ = true;
 }
 
 void ColorDepthImageDisplay::onInitialize()
@@ -175,6 +180,8 @@ void ColorDepthImageDisplay::updateNormalizeOptions()
     max_property_->setHidden(true);
     median_buffer_size_property_->setHidden(true);
   }
+
+  is_coloried_ = color_depth_switch_property_->getBool();
 }
 
 void ColorDepthImageDisplay::clear()
@@ -243,14 +250,7 @@ void ColorDepthImageDisplay::processMessage(const sensor_msgs::Image::ConstPtr& 
     updateNormalizeOptions();
   }
 
-// void addMessage(const sensor_msgs::Image::ConstPtr& image);
-// void ROSImageTexture::addMessage(const sensor_msgs::Image::ConstPtr& msg)
-// {
-//   boost::mutex::scoped_lock lock(mutex_);
-//   current_image_ = msg;
-//   new_image_ = true;
-// }
-  if(1) // enable
+  if(is_coloried_)
   {
     colorizeDepthImage(const_cast<sensor_msgs::Image*>(msg.get()));
   }
