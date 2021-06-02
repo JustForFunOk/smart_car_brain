@@ -1,3 +1,6 @@
 [submodule "utilities/jetsonUtilities"]
 	path = utilities/jetsonUtilities
 	url = https://github.com/jetsonhacks/jetsonUtilities.git
+[submodule "utilities/gpuGraph"]
+	path = utilities/gpuGraph
+	url = https://github.com/JetsonHacksNano/gpuGraph.git
