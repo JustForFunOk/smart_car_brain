@@ -4,3 +4,6 @@
 [submodule "utilities/gpuGraph"]
 	path = utilities/gpuGraph
 	url = https://github.com/JetsonHacksNano/gpuGraph.git
+[submodule "utilities/thermal_monitor"]
+	path = utilities/thermal_monitor
+	url = https://github.com/tsutof/jetson-thermal-monitor
