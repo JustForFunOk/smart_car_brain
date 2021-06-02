@@ -1,0 +1,3 @@
+[submodule "utilities/jetsonUtilities"]
+	path = utilities/jetsonUtilities
+	url = https://github.com/jetsonhacks/jetsonUtilities.git
